@@ -2,7 +2,7 @@
 
 ![A Elytra wearing piglin being highlighted by the mod](https://github.com/underscore-zi/flying-pigs-esp/blob/master/mod-example.png?raw=true)
 
-Meteor module to highlight any mobs with an Elytra. Likely to be Piglins.
+Meteor module to highlight any mobs (probably piglins) with an Elytra.
 
 ---
 
