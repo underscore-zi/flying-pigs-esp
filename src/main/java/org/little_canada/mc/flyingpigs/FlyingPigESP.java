@@ -31,7 +31,7 @@ public class FlyingPigESP extends Module {
     private final Setting<SettingColor> boxColor = sgRender.add(new ColorSetting.Builder()
         .name("box-color")
         .description("Color of entity's bounding box")
-        .defaultValue(new SettingColor(255, 0, 0, 150))
+        .defaultValue(new SettingColor(255, 0, 0, 50))
         .build()
     );
 
