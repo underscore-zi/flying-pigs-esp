@@ -1,25 +1,23 @@
 {
   "schemaVersion": 1,
-  "id": "addon-template",
+  "id": "flying-pigs-esp",
   "version": "${version}",
-  "name": "Addon Template",
-  "description": "An addon template for Meteor Client addons.",
+  "name": "Flying Pigs ESP",
+  "description": "An addon to see piglins with elytra.",
   "authors": [
-    "seasnail"
+    "__zi"
   ],
   "contact": {
-    "repo": "https://github.com/MeteorDevelopment/meteor-addon-template"
+    "repo": "https://github.com/underscore-zi/flying-pigs-esp"
   },
   "icon": "assets/template/icon.png",
   "environment": "client",
   "entrypoints": {
     "meteor": [
-      "com.example.addon.AddonTemplate"
+      "org.little_canada.mc.flyingpigs.AddonTemplate"
     ]
   },
-  "mixins": [
-    "addon-template.mixins.json"
-  ],
+  "mixins": [],
   "custom": {
     "meteor-client:color": "225,25,25"
   },
