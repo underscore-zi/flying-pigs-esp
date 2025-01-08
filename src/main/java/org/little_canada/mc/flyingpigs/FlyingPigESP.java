@@ -2,12 +2,11 @@ package org.little_canada.mc.flyingpigs;
 
 import meteordevelopment.meteorclient.events.render.Render3DEvent;
 import meteordevelopment.meteorclient.renderer.ShapeMode;
-import meteordevelopment.meteorclient.settings.ColorSetting;
-import meteordevelopment.meteorclient.settings.Setting;
-import meteordevelopment.meteorclient.settings.SettingGroup;
+import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
+import meteordevelopment.meteorclient.utils.render.RenderUtils;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.MobEntity;
@@ -17,10 +16,11 @@ import net.minecraft.util.math.Box;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-
 public class FlyingPigESP extends Module {
     private final SettingGroup sgRender = this.settings.createGroup("Render");
+    private final SettingGroup sgTracers = this.settings.createGroup("Tracers");
 
+    // ESP Settings
     private final Setting<SettingColor> lineColor = sgRender.add(new ColorSetting.Builder()
         .name("line-color")
         .description("Color of box around entity")
@@ -35,12 +35,27 @@ public class FlyingPigESP extends Module {
         .build()
     );
 
+    // Tracer Settings
+    private final Setting<Boolean> tracersEnabled = sgTracers.add(new BoolSetting.Builder()
+        .name("tracers-enabled")
+        .description("Enables tracer lines to flying mobs.")
+        .defaultValue(true)
+        .build()
+    );
+
+    private final Setting<SettingColor> tracerColor = sgTracers.add(new ColorSetting.Builder()
+        .name("tracer-color")
+        .description("Color of tracer lines.")
+        .defaultValue(new SettingColor(255, 255, 0, 150))
+        .build()
+    );
+
     private ConcurrentLinkedQueue<Integer> foundMobs = new ConcurrentLinkedQueue<Integer>();
     private int count;
     private final int maxFoundMobs = 128;
 
     public FlyingPigESP() {
-        super(AddonTemplate.CATEGORY, "flying-pigs-esp", "ESP for Mobs wearing elytra");
+        super(AddonTemplate.CATEGORY, "flying-pigs-esp", "ESP and Tracers for Mobs wearing elytra");
     }
 
     @EventHandler
@@ -50,15 +65,27 @@ public class FlyingPigESP extends Module {
             if(entity instanceof MobEntity mob) {
                 mob.getArmorItems().forEach((item) -> {
                     if (item.getItem().toString().equals("minecraft:elytra")) {
-
+                        // ESP Rendering
                         double x = net.minecraft.util.math.MathHelper.lerp(event.tickDelta, entity.lastRenderX, entity.getX()) - entity.getX();
                         double y = net.minecraft.util.math.MathHelper.lerp(event.tickDelta, entity.lastRenderY, entity.getY()) - entity.getY();
                         double z = net.minecraft.util.math.MathHelper.lerp(event.tickDelta, entity.lastRenderZ, entity.getZ()) - entity.getZ();
 
                         Box box = entity.getBoundingBox();
                         event.renderer.box(x + box.minX, y + box.minY, z + box.minZ, x + box.maxX, y + box.maxY, z + box.maxZ, boxColor.get(), lineColor.get(), ShapeMode.Both, 0);
-                        count++;
 
+                        // Tracer Rendering
+                        if (tracersEnabled.get()) {
+                            double entityX = entity.prevX + (entity.getX() - entity.prevX) * event.tickDelta;
+                            double entityY = entity.prevY + (entity.getY() - entity.prevY) * event.tickDelta;
+                            double entityZ = entity.prevZ + (entity.getZ() - entity.prevZ) * event.tickDelta;
+
+                            // Draw tracer line from center of screen to entity
+                            event.renderer.line(RenderUtils.center.x, RenderUtils.center.y, RenderUtils.center.z,
+                                entityX, entityY + entity.getHeight() / 2, entityZ,
+                                tracerColor.get());
+                        }
+
+                        count++;
                         addDiscovery(mob);
                     }
                 });
@@ -71,7 +98,6 @@ public class FlyingPigESP extends Module {
         return Integer.toString(count);
     }
 
-    // tbh I'm not sure what the concorrency concerns are here but small given the size I doubt it matters
     private synchronized void addDiscovery(MobEntity mob) {
         var id = mob.getId();
         if (!foundMobs.contains(id)) {
